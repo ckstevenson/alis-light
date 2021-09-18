@@ -56,6 +56,7 @@ LVM_VOLUME_LOGICAL="root"
 SWAPFILE="/swapfile"
 BOOT_DIRECTORY=""
 ESP_DIRECTORY=""
+#PARTITION_BOOT_NUMBER=0
 UUID_BOOT=""
 UUID_ROOT=""
 PARTUUID_BOOT=""
@@ -71,7 +72,6 @@ CMDLINE_LINUX=""
 CONF_FILE="alis.conf"
 GLOBALS_FILE="alis-globals.conf"
 LOG_FILE="alis.log"
-ASCIINEMA_FILE="alis.asciinema"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -275,12 +275,6 @@ function facts() {
     BIOS_TYPE="uefi"
   else
     BIOS_TYPE="bios"
-  fi
-
-  if [ -f "$ASCIINEMA_FILE" ]; then
-    ASCIINEMA="true"
-  else
-    ASCIINEMA="false"
   fi
 
   DEVICE_SATA="false"
@@ -770,6 +764,7 @@ function configuration() {
     sed -i "s/#$LOCALE/$LOCALE/" /mnt/etc/locale.gen
   done
   for VARIABLE in "${LOCALE_CONF[@]}"; do
+    #localectl set-locale "$VARIABLE"
     echo -e "$VARIABLE" >> /mnt/etc/locale.conf
   done
   locale-gen
@@ -1315,6 +1310,7 @@ function bootloader_grub() {
   if [ "$BIOS_TYPE" == "uefi" ]; then
     pacman_install "efibootmgr"
     arch-chroot /mnt grub-install --target=x86_64-efi --bootloader-id=grub --efi-directory=$ESP_DIRECTORY --recheck
+    #arch-chroot /mnt efibootmgr --create --disk $DEVICE --part $PARTITION_BOOT_NUMBER --loader /EFI/grub/grubx64.efi --label "GRUB Boot Manager"
   fi
   if [ "$BIOS_TYPE" == "bios" ]; then
     arch-chroot /mnt grub-install --target=i386-pc --recheck $DEVICE
@@ -1334,6 +1330,7 @@ function bootloader_refind() {
   arch-chroot /mnt rm /boot/refind_linux.conf
   arch-chroot /mnt sed -i 's/^timeout.*/timeout 5/' "$ESP_DIRECTORY/EFI/refind/refind.conf"
   arch-chroot /mnt sed -i 's/^#scan_all_linux_kernels.*/scan_all_linux_kernels false/' "$ESP_DIRECTORY/EFI/refind/refind.conf"
+  #arch-chroot /mnt sed -i 's/^#default_selection "+,bzImage,vmlinuz"/default_selection "+,bzImage,vmlinuz"/' "$ESP_DIRECTORY/EFI/refind/refind.conf"
 
   REFIND_MICROCODE=""
 
@@ -1696,8 +1693,8 @@ function desktop_environment_deepin() {
 function packages() {
   if [ "$PACKAGES_INSTALL" == "true" ]; then
     (USER_NAME=$USER_NAME \
-      USER_PASSWORD=$USER_PASSWORD \
-    ./alis-packages.sh)
+         USER_PASSWORD=$USER_PASSWORD \
+      ./alis-packages.sh)
   fi
 }
 
@@ -1755,23 +1752,10 @@ function end() {
 
       copy_logs
       do_reboot
-    else
-      if [ "$ASCIINEMA" == "true" ]; then
-        echo "Reboot aborted. You will must terminate asciinema recording and do a explicit reboot (exit, ./alis-reboot.sh)."
-        echo ""
-      else
-        echo "Reboot aborted. You will must do a explicit reboot (./alis-reboot.sh)."
-        echo ""
-      fi
     fi
   else
-    if [ "$ASCIINEMA" == "true" ]; then
-      echo "No reboot. You will must terminate asciinema recording and do a explicit reboot (exit, ./alis-reboot.sh)."
-      echo ""
-    else
-      echo "No reboot. You will must do a explicit reboot (./alis-reboot.sh)."
-      echo ""
-    fi
+    echo "No reboot. You will must do a explicit reboot (./alis-reboot.sh)."
+    echo ""
   fi
 }
 
@@ -1833,24 +1817,6 @@ function copy_logs() {
       sed -i "s/${ESCAPED_ROOT_PASSWORD}/******/g" "$FILE"
     fi
     if [ -n "$ESCAPED_USER_PASWORD" ]; then
-      sed -i "s/${ESCAPED_USER_PASSWORD}/******/g" "$FILE"
-    fi
-  fi
-  if [ -f "$ASCIINEMA_FILE" ]; then
-    SOURCE_FILE="$ASCIINEMA_FILE"
-    FILE="/mnt/var/log/alis/$ASCIINEMA_FILE"
-
-    mkdir -p /mnt/var/log/alis
-    cp "$SOURCE_FILE" "$FILE"
-    chown root:root "$FILE"
-    chmod 600 "$FILE"
-    if [ -n "$ESCAPED_LUKS_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_LUKS_PASSWORD}/******/g" "$FILE"
-    fi
-    if [ -n "$ESCAPED_ROOT_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_ROOT_PASSWORD}/******/g" "$FILE"
-    fi
-    if [ -n "$ESCAPED_USER_PASSWORD" ]; then
       sed -i "s/${ESCAPED_USER_PASSWORD}/******/g" "$FILE"
     fi
   fi

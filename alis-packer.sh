@@ -6,7 +6,7 @@ set -e
 # Copyright (C) 2021 picodotdev
 
 #CONFIG_FILE="alis-packer.json"
-CONFIG_FILE="alis-packer.pkr.hcl"
+CONFIG_FILE="alis-packer-qemu.pkr.hcl"
 
 # Grub Working
 #CONFIG_FILE_SH="alis-packer-efi-ext4-luks-grub.sh"
