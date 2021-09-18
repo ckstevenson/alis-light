@@ -71,7 +71,6 @@ CMDLINE_LINUX=""
 
 CONF_FILE="alis.conf"
 GLOBALS_FILE="alis-globals.conf"
-LOG_FILE="alis.log"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -121,7 +120,6 @@ function trim_variable() {
 
 function check_variables() {
   check_variables_value "KEYS" "$KEYS"
-  check_variables_boolean "LOG" "$LOG"
   check_variables_value "DEVICE" "$DEVICE"
   check_variables_boolean "DEVICE_TRIM" "$DEVICE_TRIM"
   check_variables_boolean "LVM" "$LVM"
@@ -255,18 +253,9 @@ function warning() {
 
 function init() {
   print_step "init()"
-
-  init_log
   loadkeys $KEYS
 }
 
-function init_log() {
-  if [ "$LOG" == "true" ]; then
-    exec > >(tee -a $LOG_FILE)
-    exec 2> >(tee -a $LOG_FILE >&2)
-  fi
-  set -o xtrace
-}
 
 function facts() {
   print_step "facts()"
@@ -1693,7 +1682,7 @@ function desktop_environment_deepin() {
 function packages() {
   if [ "$PACKAGES_INSTALL" == "true" ]; then
     (USER_NAME=$USER_NAME \
-         USER_PASSWORD=$USER_PASSWORD \
+        USER_PASSWORD=$USER_PASSWORD \
       ./alis-packages.sh)
   fi
 }
@@ -1737,7 +1726,7 @@ function end() {
     REBOOT="true"
 
     set +e
-    for (( i = 15; i >= 1; i-- )); do
+    for (( i = 10; i >= 1; i-- )); do
       read -r -s -n 1 -t 1 -p "Rebooting in $i seconds... Press any key to abort."$'\n' KEY
       if [ $? -eq 0 ]; then
         REBOOT="false"
@@ -1750,12 +1739,10 @@ function end() {
       echo "Rebooting..."
       echo ""
 
-      copy_logs
       do_reboot
     fi
   else
-    echo "No reboot. You will must do a explicit reboot (./alis-reboot.sh)."
-    echo ""
+    echo "No reboot. You must reboot yourself."
   fi
 }
 
@@ -1776,49 +1763,6 @@ function pacman_install() {
   set -e
   if [ "$ERROR" == "true" ]; then
     exit
-  fi
-}
-
-function copy_logs() {
-  ESCAPED_LUKS_PASSWORD=$(echo "${LUKS_PASSWORD}" | sed 's/[.[\*^$()+?{|]/[\\&]/g')
-  ESCAPED_ROOT_PASSWORD=$(echo "${ROOT_PASSWORD}" | sed 's/[.[\*^$()+?{|]/[\\&]/g')
-  ESCAPED_USER_PASSWORD=$(echo "${USER_PASSWORD}" | sed 's/[.[\*^$()+?{|]/[\\&]/g')
-
-  if [ -f "$CONF_FILE" ]; then
-    SOURCE_FILE="$CONF_FILE"
-    FILE="/mnt/var/log/alis/$CONF_FILE"
-
-    mkdir -p /mnt/var/log/alis
-    cp "$SOURCE_FILE" "$FILE"
-    chown root:root "$FILE"
-    chmod 600 "$FILE"
-    if [ -n "$ESCAPED_LUKS_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_LUKS_PASSWORD}/******/g" "$FILE"
-    fi
-    if [ -n "$ESCAPED_ROOT_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_ROOT_PASSWORD}/******/g" "$FILE"
-    fi
-    if [ -n "$ESCAPED_USER_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_USER_PASSWORD}/******/g" "$FILE"
-    fi
-  fi
-  if [ -f "$LOG_FILE" ]; then
-    SOURCE_FILE="$LOG_FILE"
-    FILE="/mnt/var/log/alis/$LOG_FILE"
-
-    mkdir -p /mnt/var/log/alis
-    cp "$SOURCE_FILE" "$FILE"
-    chown root:root "$FILE"
-    chmod 600 "$FILE"
-    if [ -n "$ESCAPED_LUKS_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_LUKS_PASSWORD}/******/g" "$FILE"
-    fi
-    if [ -n "$ESCAPED_ROOT_PASSWORD" ]; then
-      sed -i "s/${ESCAPED_ROOT_PASSWORD}/******/g" "$FILE"
-    fi
-    if [ -n "$ESCAPED_USER_PASWORD" ]; then
-      sed -i "s/${ESCAPED_USER_PASSWORD}/******/g" "$FILE"
-    fi
   fi
 }
 

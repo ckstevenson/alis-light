@@ -1,3 +1,20 @@
+# **ALIS-Light**
+First of all credits belong [picodotdev](https://github.com/picodotdev) and his contributers!<br>
+If you want to check out the full version look here: [alis](https://github.com/picodotdev/alis)<br>
+Initiators of alis-light: [MrFinchMKV](https://github.com/MrFinchMkV) and [ckstevenson](https://github.com/ckstevenson)
+___
+
+# **Our Philosophy: Do one thing and do it good!**
+
+After this philosophy alis got lightened. The following features got removed:
+- Asciinema
+- Flatpacks
+- SDK-Man
+- Reboot script
+- Recovery
+
+
+
 # alis
 
 ![Arch Linux](https://img.shields.io/badge/-ArchLinux-black?logo=arch-linux)
@@ -14,7 +31,7 @@ If some time later after an system update for any reason the system does not boo
 
 Currently these scripts are for me but maybe they are useful for you too.
 
-Follow the [Arch Way](https://wiki.archlinux.org/index.php/Arch_Linux) of doing things and learn what this script does. This will allow you to know what is happening. 
+Follow the [Arch Way](https://wiki.archlinux.org/index.php/Arch_Linux) of doing things and learn what this script does. This will allow you to know what is happening.
 
 Please, don't ask for support for this script in Arch Linux forums, first read the [Arch Linux wiki](https://wiki.archlinux.org), the [Installation Guide](https://wiki.archlinux.org/index.php/Installation_guide) and the [General Recommendations](https://wiki.archlinux.org/index.php/General_recommendations), later compare those commands with the commands of this script.
 
@@ -49,15 +66,15 @@ If you find useful this script, you can support me with a [small donation](https
 * Use the original Arch Linux installation media
 * As much unattended and automated as possible, require as little interactivity as possible
 * Allow to customize the installation to cover the most common cases
-* Provide support for system recovery
 * Provide support for installation log
 
 ### Features
 
 * **System**: UEFI, BIOS
 * **Storage**: SATA, NVMe and MMC
-* **Encryption**: root partition encrypted and no encrypted
-* **Partition**: no LVM, LVM, LVM on LUKS, GPT on UEFI, MBR on BIOS
+* **Encryption**: root partition encrypted and not encrypted
+* **Full diskencryption**: Works right now only with grub
+* **Partition**: no LVM, LVM, LVM on LUKS, LUKS, GPT on UEFI, MBR on BIOS
 * **File system**: ext4, btrfs (with subvols), xfs, f2fs, reiserfs
 * **Kernels**: linux, linux-lts, linux-hardened, linux-zen
 * **Desktop environment**: GNOME, KDE, XFCE, Mate, Cinnamon, LXDE, i3-wm, i3-gaps, Deepin
@@ -75,14 +92,12 @@ If you find useful this script, you can support me with a [small donation](https
 * **systemd units enable or disable**
 * **Multilib** support
 * **Arch Linux** common and custom **packages installation**
-* Flatpak utility installation and **Flatpak packages installation**
-* SDKMAN utility installation and **SDKMAN packages installation**
 * **AUR utility** installation (paru, yay, aurman) and **AUR packages installation**
 * **Packages installation after base system installation** (preferred way of packages installation)
 * Script for download installation and **recovery scripts** and configuration files
 * **Retry packages download** on connection/mirror error
 * **Packer support** for testing in VirtualBox
-* **Installation log** with all commands executed and output in a file and/or **asciinema video**
+* **Installation log** with all commands executed and output in a file
 * Wait after installation for an **abortable reboot**
 * Fork the repository and **use your own configuration**
 
@@ -90,7 +105,7 @@ If you find useful this script, you can support me with a [small donation](https
 
 Download and boot from the latest <a href="https://www.archlinux.org/download/">original Arch Linux installation media</a>. After boot use the following commands to start the installation.
 
-Follow the <a href="https://wiki.archlinux.org/index.php/Arch_Linux">Arch Way</a> of doing things and learn what this script does. This will allow you to know what is happening. 
+Follow the <a href="https://wiki.archlinux.org/index.php/Arch_Linux">Arch Way</a> of doing things and learn what this script does. This will allow you to know what is happening.
 
 Internet connection is required, with wireless WIFI connection see <a href="https://wiki.archlinux.org/index.php/Wireless_network_configuration#Wi-Fi_Protected_Access">Wireless_network_configuration</a> to bring up WIFI connection before start the installation.
 
@@ -116,7 +131,7 @@ If you fork _alis_ repository you can host your own configuration and changes in
 
 ### Packages installation
 
-After the base Arch Linux system is installed, alis can install packages with pacman, Flatpak, SDKMAN and from AUR.
+After the base Arch Linux system is installed, ALIS-light can install packages with pacman and from AUR.
 
 ```
 #                                  # After system installation start a user session
@@ -125,22 +140,6 @@ After the base Arch Linux system is installed, alis can install packages with pa
 # ./alis-packages-asciinema.sh     # (Optional) Start asciinema video recording
 # vim alis-packages.conf           # Edit configuration and change variables values with your preferences (packages to install)
 # ./alis-packages.sh               # Start packages installation
-```
-
-### Recovery
-
-Boot from the latest <a href="https://www.archlinux.org/download/">original Arch Linux installation media</a>. After boot use the following commands to start the recovery, this will allow you to enter in the arch-chroot environment.
-
-```
-#                                  # Start the system with latest Arch Linux installation media
-# loadkeys [keymap]                # Load keyboard keymap, eg. loadkeys es, loadkeys us, loadkeys de
-# iwctl --passphrase "[WIFI_KEY]" station [WIFI_INTERFACE] connect "[WIFI_ESSID]"          # (Optional) Connect to WIFI network. _ip link show_ to know WIFI_INTERFACE.
-# curl -sL https://raw.githubusercontent.com/picodotdev/alis/master/download.sh | bash     # Download alis scripts
-# # curl -sL https://bit.ly/2F3CATp | bash                                                 # Alternative download URL with URL shortener
-# ./alis-recovery-asciinema.sh     # (Optional) Start asciinema video recording
-# vim alis-recovery.conf           # Edit configuration and change variables values with your last installation configuration with alis (mainly device and partition scheme)
-# ./alis-recovery.sh               # Start recovery
-# ./alis-recovery-reboot.sh        # Reboot the system
 ```
 
 ### How you can help
@@ -172,10 +171,6 @@ $ ./alis-packer.sh -c alis-packer-efi-ext4-grub-gnome.sh
 $ ./alis-packer.sh -c alis-packer-efi-ext4-grub-kde.sh
 $ ./alis-packer.sh -c alis-packer-efi-ext4-grub-xfce.sh
 ```
-
-### Video
-
-[![asciicast](https://asciinema.org/a/418524.png)](https://asciinema.org/a/418524)
 
 ### Arch Linux Installation Media
 
