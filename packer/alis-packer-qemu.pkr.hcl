@@ -13,8 +13,9 @@ source "qemu" "arch" {
   http_directory   = "."
   accelerator      = "kvm"
   firmware         = "/usr/share/edk2-ovmf/x64/OVMF.fd"
-  ssh_username     = "vagrant"
+  ssh_username     = "root"
   ssh_password     = "vagrant"
+  ssh_timeout      = "40m"
   vm_name          = "alis.qcow2"
   net_device       = "virtio-net"
   disk_interface   = "virtio"
@@ -24,15 +25,30 @@ source "qemu" "arch" {
   memory           = 2048
   boot_command = [
     "<wait3s><up><up><up><up><up><enter><wait30s>",
+    "/usr/bin/echo -e \"vagrant\\nvagrant\" | /usr/bin/passwd && loadkeys us<enter><wait1s>",
     "curl -O http://{{.HTTPIP}}:{{.HTTPPort}}/packer/download-packer.sh<enter><wait1s>",
     "chmod +x ./*.sh<enter><wait1s>",
     "./download-packer.sh \"{{.HTTPIP}}\" \"{{.HTTPPort}}\" ${var.config_file_sh}<enter><wait1s>",
-    "./alis-packer-conf.sh<enter><wait1s>",
-    "loadkeys us<enter><wait1>",
-    "./alis.sh<enter><wait1s>y<wait1s><enter>"
+    "./alis-packer-conf.sh<enter><wait1s>"
   ]
 }
 
 build {
   sources = ["source.qemu.arch"]
+    provisioner "shell" {
+      scripts = [
+        #"alis-packer-conf.sh",
+        "alis.sh"
+      ]
+    }
+    # Example.
+    #    provisioner "ansible" {
+    #        playbook_file = "./packer/ansible/arch_provisioner.yml"
+    #        user = "root"
+    #        extra_arguments = [
+    #            "-b",
+    #            "--extra-vars",
+    #            "ansible_become_password=vagrant",
+    #        ]
+    #    }
 }
